@@ -14,38 +14,75 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val btnCalcula: Button = findViewById(R.id.button)
-        btnCalcula.setOnClickListener{
-            //Declaración de variables
-            var txtResultado: TextView = findViewById(R.id.imc)
-            var txtEstado: TextView = findViewById(R.id.range)
+        //Declaración de variables
+        var txtResultado: TextView = findViewById(R.id.imc)
+        var txtEstado: TextView = findViewById(R.id.range)
 
+
+        val btnCalcula: Button = findViewById(R.id.button)
+
+        btnCalcula.setOnClickListener{
             //Declaración de los editText
             val etEstatura: EditText = findViewById(R.id.height)
             val etPeso: EditText = findViewById(R.id.weight)
+            //Convertir los kilos y estatura a double.
+            var peso: Double = 0.0
+            var estatura: Double = 0.0
 
+            try {
+                peso = etPeso.text.toString().toDouble()
+                estatura = etEstatura.text.toString().toDouble()
+            } catch(e: java.lang.Exception){
+                txtResultado.setText("Debe ingresar valores reales")
+                println(e)
+            }
 
-            if(!etEstatura.text.isBlank() || etPeso.text.isBlank()){
-                //Se calcula el indice de masa corporal y se ubica el resultado en
-                val imcNum = this.calculaIMC(etEstatura.text.toString().toDouble(),
-                etPeso.text.toString().toDouble())
-                txtResultado.setText(imcNum.toString())
+            var resultado = calculaIMC(estatura, peso)
+            val formattedNumber = "%.2f".format(resultado)
+            txtResultado.setText(formattedNumber)
 
-                //Se obtiene el estado del usuario
-                val estado = this.obtenEstado(imcNum)
-                txtEstado.setText(estado)
+            var salud: String
+            var color: Int
 
-                //Se le añade el color dependiendo del resultado
+            when {
+                resultado < 18.5 -> {
+                    salud = "Bajo Peso"
+                    color = R.color.colorRed
+                }
 
-                when(estado){
-                    "Bajo peso" -> txtEstado.setBackgroundResource(R.color.colorBrown)
-                    "Saludable" -> txtEstado.setBackgroundResource(R.color.colorGreen)
-                    "Sobrepeso" -> txtEstado.setBackgroundResource(R.color.colorGreenish)
-                    "Obesidad de grado 1" -> txtEstado.setBackgroundResource(R.color.colorYellow)
-                    "Obesidad de grado 2" -> txtEstado.setBackgroundResource(R.color.colorOrange)
-                    "Obesidad de grado 3" -> txtEstado.setBackgroundResource(R.color.colorRed)
+                resultado >= 18.5 && resultado <= 24.9 -> {
+                    salud = "Saludable"
+                    color = R.color.colorGreenish
+                }
+
+                resultado >= 25 && resultado <= 29.9 -> {
+                    salud =  "Sobrepeso"
+                    color = R.color.colorYellow
+                }
+
+                resultado >= 30 && resultado <= 34.9 -> {
+                    salud = "Obesidad Grado 1"
+                    color = R.color.colorOrange
+                }
+
+                resultado >= 35 && resultado <= 39.9 -> {
+                    salud = "Obesidad Grado 2"
+                    color = R.color.colorBrown
+                }
+
+                resultado >= 40 -> {
+                    salud = "Obesidad Grado 3"
+                    color = R.color.colorRed
+                }
+
+                else -> {
+                    salud = "Error"
+                    color = 0
                 }
             }
+
+            txtEstado.setBackgroundResource(color)
+            txtEstado.setText(salud)
         }
     }
 
@@ -57,21 +94,4 @@ class MainActivity : AppCompatActivity() {
         val imc: Double = (peso/(Math.pow(altura, 2.0)))
         return imc
     }
-
-    /**
-     * Función encargada de devolvel el estado del usuario en base al imc.
-     */
-    fun obtenEstado(imc: Double): String{
-        when{
-            imc <18.5 -> return  "Bajo peso"
-            imc >= 18.5 && imc <= 24.9 -> return "Saludable"
-            imc > 24.9 && imc <= 29.9 -> return "Sobrepeso"
-            imc > 29.9 && imc <= 34.9 -> return "Obesidad de grado 1"
-            imc > 34.9 && imc <= 39.9 -> return "Obesidad de grado 2"
-            imc >= 40 -> return "Obesidad de grado 3"
-        }
-
-        return "error"
-    }
-
 }
